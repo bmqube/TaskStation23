@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableHeader,
@@ -7,100 +7,52 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  User,
-  Chip,
-  Tooltip,
 } from "@nextui-org/react";
 import { EditIcon, DeleteIcon } from "@/components/icons";
-import { columns, users } from "./data";
+// import { columns, users } from "./data";
 import TaskForm from "@/components/TaskForm";
-
-const statusColorMap = {
-  active: "success",
-  paused: "danger",
-  vacation: "warning",
-};
+import { log } from "console";
 
 export default function App() {
-  const renderCell = React.useCallback((user: any, columnKey: any) => {
-    const cellValue = user[columnKey];
+  const [tasks, setTasks] = React.useState([]);
+  const [columns, setColumns] = React.useState([]);
 
-    switch (columnKey) {
-      case "name":
-        return (
-          <User
-            avatarProps={{ radius: "lg", src: user.avatar }}
-            description={user.email}
-            name={cellValue}
-          >
-            {user.email}
-          </User>
-        );
-      case "role":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-sm capitalize">{cellValue}</p>
-            <p className="text-bold text-sm capitalize text-default-400">
-              {user.team}
-            </p>
-          </div>
-        );
-      case "status":
-        return (
-          <Chip
-            className="capitalize"
-            color="success"
-            // color={statusColorMap[user.status]}
-            size="sm"
-            variant="flat"
-          >
-            {cellValue}
-          </Chip>
-        );
-      case "actions":
-        return (
-          <div className="relative flex items-center gap-2">
-            <Tooltip content="Edit Task">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EditIcon />
-              </span>
-            </Tooltip>
-            <Tooltip color="danger" content="Delete Task">
-              <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                <DeleteIcon />
-              </span>
-            </Tooltip>
-          </div>
-        );
-      default:
-        return cellValue;
-    }
+  useEffect(() => {
+    const getTasks = async () => {
+      const tasksFromServer = await fetch("/api/tasks");
+      const data = await tasksFromServer.json();
+      console.log(data);
+
+      setTasks(data.data);
+      setColumns(Object.keys(data.data[0]));
+    };
+
+    getTasks();
   }, []);
 
   return (
     <div className="container mx-auto">
-      <Table aria-label="Example table with custom cells">
-        <TableHeader columns={columns}>
-          {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
-            >
-              {column.name}
-            </TableColumn>
-          )}
+      <Table aria-label="Example static collection table">
+        <TableHeader>
+          <TableColumn>ID</TableColumn>
+          <TableColumn>Title</TableColumn>
+          <TableColumn>Description</TableColumn>
+          <TableColumn>Status</TableColumn>
+          <TableColumn>Actions</TableColumn>
         </TableHeader>
-        <TableBody items={users}>
-          {(item) => (
-            <TableRow key={item.id}>
-              {(columnKey) => (
-                <TableCell>{renderCell(item, columnKey)}</TableCell>
-              )}
-            </TableRow>
-          )}
+        <TableBody>
+          {tasks.length > 0 &&
+            tasks.map((task: any, index) => (
+              <TableRow key={index}>
+                <TableCell>{task.id}</TableCell>
+                <TableCell>{task.title}</TableCell>
+                <TableCell>{task.description}</TableCell>
+                <TableCell>{task.status}</TableCell>
+                <TableCell>{task.status}</TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
-      <TaskForm />
     </div>
   );
 }

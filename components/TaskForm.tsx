@@ -4,33 +4,50 @@ import { Input, Select, Button, Textarea, SelectItem } from "@nextui-org/react";
 const TaskForm = (props: any) => {
   const [id, setId] = useState("");
   const [title, setTitle] = useState("");
-  const [details, setDetails] = useState("");
+  const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
 
   useEffect(() => {
     if (props.task) {
       setId(props.task.id);
       setTitle(props.task.title);
-      setDetails(props.task.details);
+      setDescription(props.task.description);
       setStatus(props.task.status);
     }
   }, []);
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    if (!title || !details || !status) {
-      alert("Please fill in all fields");
-      return;
-    }
+    console.log(title, description, status);
 
-    if (id) {
-    } else {
-      const newTask = {
-        title,
-        details,
-        status,
-      };
+    try {
+      if (!title || !description || !status) {
+        alert("Please fill in all fields");
+        return;
+      }
+
+      if (id) {
+      } else {
+        const newTask = {
+          title,
+          description,
+          status,
+        };
+
+        const res = await fetch("/api/tasks", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newTask),
+        });
+
+        const resData = await res.json();
+        console.log(resData);
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -44,16 +61,28 @@ const TaskForm = (props: any) => {
       />
       <Textarea
         className="mt-4"
-        label="Details"
-        value={details}
-        onChange={(e) => setDetails(e.target.value)}
+        label="description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
       />
-      <Select label="Status: " className="mt-4">
-        <SelectItem key={1} value={"Moew"}>
+      <Select
+        onChange={(e) => {
+          console.log(e);
+          setStatus(e.target.value);
+        }}
+        label="Status: "
+        className="mt-4"
+      >
+        <SelectItem key={69} value="Moew">
           Moew
         </SelectItem>
       </Select>
-      <Button className="mt-4 w-full" type="submit" color="success">
+      <Button
+        onClick={handleSubmit}
+        className="mt-4 w-full"
+        type="submit"
+        color="success"
+      >
         Submit
       </Button>
     </div>

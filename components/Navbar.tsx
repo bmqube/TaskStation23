@@ -6,11 +6,19 @@ import {
   NavbarContent,
   NavbarItem,
   Link,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
   Button,
+  useDisclosure,
 } from "@nextui-org/react";
 import Cookies from "js-cookie";
+import TaskForm from "./TaskForm";
 
 export default function Navbar() {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const myCookie = Cookies.get("auth-token");
 
   const [isLogged, setIsLogged] = useState(false);
@@ -34,18 +42,26 @@ export default function Navbar() {
       </NavbarBrand>
       <NavbarContent justify="end">
         {isLogged ? (
-          <NavbarItem>
-            <Button
-              color="success"
-              onClick={() => {
-                Cookies.remove("auth-token");
-                setIsLogged(false);
-              }}
-              variant="flat"
-            >
-              Logout
-            </Button>
-          </NavbarItem>
+          <>
+            <NavbarItem>
+              <Button color="success" onPress={onOpen}>
+                Add New Task
+              </Button>
+            </NavbarItem>
+
+            <NavbarItem>
+              <Button
+                color="warning"
+                onClick={() => {
+                  Cookies.remove("auth-token");
+                  setIsLogged(false);
+                }}
+                variant="flat"
+              >
+                Logout
+              </Button>
+            </NavbarItem>
+          </>
         ) : (
           <>
             <NavbarItem className="text-success">
@@ -61,6 +77,18 @@ export default function Navbar() {
           </>
         )}
       </NavbarContent>
+
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent className="p-6">
+          <ModalHeader className="text-success">Add New Task</ModalHeader>
+          <ModalBody>
+            <p className="text-default-500">
+              Please fill out the form below to add a new task.
+            </p>
+          </ModalBody>
+          <TaskForm />
+        </ModalContent>
+      </Modal>
     </NavbarNextUI>
   );
 }

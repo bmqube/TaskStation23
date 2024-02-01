@@ -38,15 +38,32 @@ export const GET = async (req: any, res: any) => {
       where: {
         username: decoded.username,
       },
-      select: {
-        tasks: true,
-      },
     });
+
+    let tasks;
+
+    if (user.role === "USER") {
+      tasks = await prisma.task.findMany({
+        where: {
+          userId: user.id,
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          status: true,
+        },
+      });
+    } else {
+      tasks = await prisma.task.findMany();
+    }
+
+    await prisma.$disconnect();
 
     return new Response(
       JSON.stringify({
         message: "Your data has been fetched",
-        // data: tasks,
+        data: tasks,
       }),
       {
         status: 200,
@@ -63,6 +80,7 @@ export const GET = async (req: any, res: any) => {
 export const POST = async (req: any, res: any) => {
   try {
     const authToken = cookies().get("auth-token")?.value;
+    const { title, description, status } = await req.json();
 
     if (!authToken) {
       return new Response(
@@ -90,40 +108,18 @@ export const POST = async (req: any, res: any) => {
 
     const prisma = new PrismaClient();
 
-    const tasks = await prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         username: decoded.username,
       },
-      select: {
-        tasks: true,
-      },
     });
 
-    const prisma = new PrismaClient();
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        username,
-      },
-    });
-
-    if (existingUser) {
-      return new Response(
-        JSON.stringify({
-          message: "Username already exists",
-        }),
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await prisma.user.create({
+    const newTask = await prisma.task.create({
       data: {
-        username,
-        email,
-        password: hashedPassword,
+        title,
+        description,
+        status,
+        userId: user.id,
       },
     });
 
@@ -131,7 +127,7 @@ export const POST = async (req: any, res: any) => {
 
     return new Response(
       JSON.stringify({
-        message: "Your account has been created",
+        message: "Your task has been added",
       }),
       {
         status: 201,
