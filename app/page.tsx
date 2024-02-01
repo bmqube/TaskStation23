@@ -7,6 +7,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Tooltip,
 } from "@nextui-org/react";
 import { EditIcon, DeleteIcon } from "@/components/icons";
 // import { columns, users } from "./data";
@@ -42,13 +43,26 @@ export default function App() {
         </TableHeader>
         <TableBody>
           {tasks.length > 0 &&
-            tasks.map((task: any, index) => (
+            tasks.map((task, index) => (
               <TableRow key={index}>
                 <TableCell>{task.id}</TableCell>
                 <TableCell>{task.title}</TableCell>
                 <TableCell>{task.description}</TableCell>
                 <TableCell>{task.status}</TableCell>
-                <TableCell>{task.status}</TableCell>
+                <TableCell>
+                  <div className="flex">
+                    <Tooltip content="Edit task">
+                      <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                        <EditIcon />
+                      </span>
+                    </Tooltip>
+                    <Tooltip color="danger" content="Delete task">
+                      <span className="ms-2 text-lg text-danger cursor-pointer active:opacity-50">
+                        <DeleteIcon />
+                      </span>
+                    </Tooltip>
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
         </TableBody>
