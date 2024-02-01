@@ -9,6 +9,7 @@ import {
   Link,
 } from "@nextui-org/react";
 import { useState } from "react";
+import Cookies from "js-cookie";
 
 import { EyeSlashFilledIcon, EyeFilledIcon } from "@/components/icons";
 
@@ -18,21 +19,44 @@ export default function Login() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState({} as any);
-  const [loading, setLoading] = useState(false);
+
+  const [success, setSuccess] = useState("");
+  const [errors, setErrors] = useState("");
+
+  const myCookie = Cookies.get("auth-token");
+
+  if (myCookie) {
+    window.location.href = "/";
+  }
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setLoading(true);
-    setErrors({});
 
     try {
-      setTimeout(() => {
-        console.log("username", username);
-        setLoading(false);
-      }, 2000);
+      const data = {
+        username,
+        password,
+      };
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const resData = await res.json();
+      console.log(resData);
+
+      if (res.ok) {
+        setSuccess(resData.message);
+      } else {
+        setErrors(resData.message);
+      }
     } catch (err: any) {
-      setErrors(err.response.data);
+      console.log(err);
+      setErrors("Something went wrong, please try again");
     }
   };
 
@@ -83,7 +107,6 @@ export default function Login() {
 
           <div className="grid grid-cols-1 gap-4 mt-5">
             <Button
-              disabled={loading}
               onClick={handleSubmit}
               color="success"
               className="p-7 rounded-full text-lg"

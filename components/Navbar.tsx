@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Navbar as NavbarNextUI,
   NavbarBrand,
@@ -8,9 +8,21 @@ import {
   Link,
   Button,
 } from "@nextui-org/react";
+import Cookies from "js-cookie";
 
 export default function Navbar() {
+  const myCookie = Cookies.get("auth-token");
+
   const [isLogged, setIsLogged] = useState(false);
+
+  useEffect(() => {
+    if (myCookie) {
+      setIsLogged(true);
+    } else {
+      setIsLogged(false);
+    }
+  }, [myCookie]);
+
   return (
     <NavbarNextUI>
       <NavbarBrand>
@@ -23,7 +35,14 @@ export default function Navbar() {
       <NavbarContent justify="end">
         {isLogged ? (
           <NavbarItem>
-            <Button as={Link} color="success" href="/register" variant="flat">
+            <Button
+              color="success"
+              onClick={() => {
+                Cookies.remove("auth-token");
+                setIsLogged(false);
+              }}
+              variant="flat"
+            >
               Logout
             </Button>
           </NavbarItem>
